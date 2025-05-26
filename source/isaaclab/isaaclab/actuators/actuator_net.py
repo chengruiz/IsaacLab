@@ -48,6 +48,17 @@ class ActuatorNetLSTM(DCMotor):
         # load the model from JIT file
         file_bytes = read_file(self.cfg.network_file)
         self.network = torch.jit.load(file_bytes, map_location=self._device).eval()
+        self.network.lstm._flat_weights_names = [
+            "weight_ih_l0",
+            "weight_hh_l0",
+            "bias_ih_l0",
+            "bias_hh_l0",
+            "weight_ih_l1",
+            "weight_hh_l1",
+            "bias_ih_l1",
+            "bias_hh_l1",
+        ]
+        torch.nn.LSTM.flatten_parameters(self.network.lstm)
 
         # extract number of lstm layers and hidden dim from the shape of weights
         num_layers = len(self.network.lstm.state_dict()) // 4
